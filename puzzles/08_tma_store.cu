@@ -1,13 +1,11 @@
-// Puzzle 8: The bulk store's proxy fence (sm_90 and newer)
+// Puzzle 8: The TMA store (sm_90 and newer)
 //
-// Each block's threads write a tile into shared memory, the block syncs, and thread 0 copies the tile to global memory
-// with the bulk-copy engine (the TMA unit's 1-D copy), then waits for it. The copy reads shared memory through the
-// async proxy. __syncthreads() orders the threads' writes for other threads, which use the generic proxy. The async
-// proxy needs its own fence between the generic writes and the copy, or the copy can read the tile as it was before.
+// Each block's threads write a tile into shared memory, and the block syncs. Thread 0 then copies the tile to global
+// memory with the TMA unit's bulk copy and waits for it to finish (bulk_store_and_wait in common.cuh).
 //
 // Make the copy read the finished tile. Par: 1.
 //
-// Seen in: every TMA store epilogue. CUTLASS calls this fence tma_store_fence() and puts it before the barrier.
+// From: TMA store epilogues, such as CUTLASS's.
 #include "common.cuh"
 
 constexpr int B = 4, T = 128, TILE = 256;

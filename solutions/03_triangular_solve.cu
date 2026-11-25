@@ -1,14 +1,11 @@
-// Puzzle 3: The missing release
+// Puzzle 3: A triangular solve
 //
-// A triangular solve step. Four producer blocks each add a contribution into lsum with atomicAdd, then decrement a
-// dependency counter, fmod. The consumer block spins until fmod reaches 0, fences, and reads lsum. The consumer side
-// is a correct acquire. The producers decrement with a relaxed atomicSub and nothing before it, so their additions are
-// not released: the consumer can see fmod at 0 and still read a partial sum.
+// One step of a triangular solve. Four producer blocks each add their contribution into lsum with atomicAdd, then
+// decrement a counter, fmod. The consumer block spins until fmod reaches 0, calls __threadfence(), and reads lsum.
 //
 // Make the consumer read the full sum. Par: 1.
 //
-// Seen in: SuperLU_DIST's GPU triangular solve. An earlier commit put back the consumer's fence after a port dropped
-// it; the producer's release was still missing (xiaoyeli/superlu_dist#261, fixed upstream in 239280c).
+// From: SuperLU_DIST's GPU triangular solve (xiaoyeli/superlu_dist#261, fixed upstream in 239280c).
 #include "common.cuh"
 
 constexpr int T = 128, P = 4;
@@ -20,8 +17,8 @@ __global__ void solve_step(int* fmod, float* lsum, float* x) {
     __syncthreads();
     if (t == 0) {
       // >>> edit
-      atomicSub(fmod, 1);
       __threadfence();
+      atomicSub(fmod, 1);
       // <<< edit
     }
   } else {                                        // consumer

@@ -1,15 +1,12 @@
-// Puzzle 9: The reused reduction buffer
+// Puzzle 9: Argmax, row by row
 //
-// One block finds the argmax of each of 16 rows. For each row, every warp reduces its 32 values, lane 0 of each warp
-// writes its best value and index into shared memory, the block syncs, and warp 0 reduces the 8 candidates and writes
-// the row's answer. Then the loop moves to the next row and the warps write their candidates into the same slots. The
-// barrier orders this row's writes before warp 0's reads. Nothing orders warp 0's reads before the next row's writes,
-// so a warp that runs ahead can overwrite a slot that warp 0 has not read yet.
+// One block finds the argmax of each of 16 rows. For each row, every warp finds the best of its 32 values, lane 0 of
+// each warp writes its candidate into shared memory, the block syncs, and warp 0 picks the row's answer from the 8
+// candidates. The loop then moves to the next row and reuses the same shared slots.
 //
 // Make every row's answer come from that row. Par: 1.
 //
-// Seen in: Mirage MPK's block_reduce_max_idx (tasks/ampere/argmax.cuh, and the sm100 copy), called once per batch
-// row in a loop (mirage-project/mirage#843).
+// From: Mirage MPK's argmax (mirage-project/mirage#843).
 #include "common.cuh"
 
 constexpr int T = 256, W = T / 32, ROWS = 16;

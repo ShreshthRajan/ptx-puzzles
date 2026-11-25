@@ -1,11 +1,13 @@
 # Solutions
 
-Spoilers. Each file here is the puzzle with the reference edit, and each paragraph below says why it works in the PTX
-memory model's terms. The model's rule for all twelve: two accesses to one location race when at least one is a write,
-they are not both strong (relaxed, acquire, release or atomic), and no happens-before edge orders them. Happens-before
-between threads comes from a release that an acquire observes, from barriers, and from fences that turn a relaxed
-access into one of those. A racing load may return any value the location held that the model does not rule out,
-including the value from before the write.
+These are the answers, so try the puzzles first. Each file here is the puzzle with the reference edit, and each
+paragraph below says why it works under the PTX memory model.
+
+One rule covers all twelve. Two accesses to the same location race when at least one is a write, they are not both
+strong (relaxed, acquire, release or atomic), and no happens-before edge orders them. Between threads, happens-before
+comes from a release that an acquire observes, from barriers, and from fences that turn a relaxed access into a release
+or an acquire. A racing load may return any value the model doesn't rule out, including the value from before the
+write.
 
 **1. Message passing.** `st_release(flag, 1)` and `ld_acquire(flag)`. The acquire reads the value the release wrote, so
 the release synchronizes with the acquire, and every write before the release in the producer's program order happens
@@ -13,12 +15,12 @@ before every read after the acquire. With both accesses relaxed there is no sync
 flag's values and nothing else. A fence on each side (`__threadfence()` before the store, after the spin) also works at
 the same cost; it is the form the next puzzles use.
 
-**2. The volatile spin.** `__threadfence()` after the spin. A volatile load is `ld.volatile`, which the model treats as
+**2. Waiting on a counter.** `__threadfence()` after the spin. A volatile load is `ld.volatile`, which the model treats as
 relaxed. A relaxed load followed by a fence is an acquire pattern: once the load observes the producer's release, the
 fence synchronizes with it, and the reads after the fence are ordered. `ld_acquire` in the spin is the other answer.
 The block's `__syncthreads()` then carries thread 0's acquire to the other threads (puzzle 6).
 
-**3. The missing release.** `__threadfence()` before `atomicSub`. A fence followed by a relaxed atomic is a release
+**3. A triangular solve.** `__threadfence()` before `atomicSub`. A fence followed by a relaxed atomic is a release
 pattern. The consumer's acquire pairs with a release, and the producer had none: its atomicSub was relaxed and the
 fence was on the consumer's side only. Each producer's `__syncthreads()` before the fence makes the release cover its
 other threads' additions. The fence is per producer, and the counter's atomic decrements form a release sequence, so
@@ -43,26 +45,26 @@ accesses. The barrier makes everything before it in thread 0 happen before every
 so their reads come after the acquire and therefore after block 1's writes. Waiting 2 ms is a timing argument; the model
 has no notion of time, and adversarial mode returns the stale value however long the warps wait.
 
-**7. The grid barrier's reset.** `atomicExch(count, 0u)`. Two strong accesses to one location never race: coherence
+**7. A grid barrier.** `atomicExch(count, 0u)`. Two strong accesses to one location never race: coherence
 orders them, and it follows each thread's program order, so the reset comes after the last arriver's own ticket, which
 came after every other ticket. The plain store was not strong, and nothing ordered it after the other blocks' tickets:
 the last arriver's ticket is relaxed and its fence comes after the reset. Any strong store also works at no cost
 (`st_relaxed(count, 0)`, or a volatile store, which PTX treats as relaxed). A `__threadfence()` between the ticket and
 the reset removes the race too, by making the ticket an acquire, at a cost of one fence.
 
-**8. The bulk store's proxy fence.** `fence_proxy_async()` in every thread before the barrier. The PTX model has more
+**8. The TMA store.** `fence_proxy_async()` in every thread before the barrier. The PTX model has more
 than one proxy: ordinary loads and stores use the generic proxy, and the bulk-copy engine reads shared memory through
 the async proxy. Happens-before between threads does not order accesses across proxies; a proxy fence does. Each thread
 fences its own generic writes, the barrier orders those fences before thread 0, and thread 0 issues the copy. This is
 CUTLASS's `tma_store_fence()` followed by the barrier.
 
-**9. The reused reduction buffer.** `__syncthreads()` at the end of the loop. The barrier in the middle of the loop orders
+**9. Argmax, row by row.** `__syncthreads()` at the end of the loop. The barrier in the middle of the loop orders
 this row's candidate writes before warp 0's reads. A second barrier orders warp 0's reads of row r before any warp's
 writes for row r + 1. Two alternating buffers remove the race with no second barrier: a write for row r + 2 comes after
 the barrier of row r + 1, which warp 0 reaches only after its reads of row r. That version needs edits outside the
 markers, so it is not scored here.
 
-**10. The page goes back too early.** `FREE_THREADS = 96` and `bar_arrive(FREE, FREE_THREADS)` in the consumer after it
+**10. Recycling a page.** `FREE_THREADS = 96` and `bar_arrive(FREE, FREE_THREADS)` in the consumer after it
 writes L. A named barrier orders the writes before each arrival before the reads and writes after the waiting
 `bar_sync`. The loader waited for the storer alone, so only the storer's accesses were ordered before its loads. With the
 consumer arriving too, the consumer's write of L happens before the loader's writes into the same words.

@@ -1,17 +1,13 @@
-// Puzzle 7: The grid barrier's reset
+// Puzzle 7: A grid barrier
 //
-// A software grid barrier. Each block's thread 0 reads the generation, fences, and takes a ticket from a counter. The
-// last block to arrive resets the counter, fences, and bumps the generation. The others spin on the generation and
-// fence. The kernel runs 1,024 stencil steps with a barrier after each, so the counter is reset and reused. The
-// arrivals release and the waits acquire. The reset is a plain store, and the last arriver's ticket was a relaxed
-// atomic, so the reset is not ordered after the other blocks' tickets. That is a write-write race on the counter. No
-// load reads a stale value, so adversarial mode has nothing to change and the race report is the evidence. syncsan
-// sees this race only when two tickets arrive at nearly the same moment, about once in 40 crossings on an RTX 5090, so
-// the kernel crosses the barrier 1,024 times.
+// A software grid barrier. At each barrier, every block's thread 0 reads the generation number, fences, and takes a
+// ticket from a counter. The last block to arrive resets the counter to 0, fences, and increments the generation. The
+// other blocks spin on the generation and fence. The kernel runs 1,024 steps with a barrier after each, because the bug
+// only shows when two blocks arrive at almost the same moment.
 //
-// Make the reset safe. Par: 0.
+// Make every step read the previous step's values. Par: 0.
 //
-// Seen in: Lucebox's Qwen3.5 decode megakernel (AtomicGridSync::sync, `*counter = 0`). RESOLVE reported the same race.
+// From: Lucebox's AtomicGridSync.
 #include "common.cuh"
 
 constexpr int B = 8, T = 128, N = B * T, STEPS = 1024;

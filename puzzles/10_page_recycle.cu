@@ -1,16 +1,14 @@
-// Puzzle 10: The page goes back too early
+// Puzzle 10: Recycling a page
 //
-// A megakernel block runs instructions out of a shared-memory page, with one warp per role. For the first instruction,
-// the consumer (warp 0) writes its output O into the page's first half and arrives on O_READY. The storer (warp 1)
-// waits there, copies O to global memory, and frees the page by arriving on FREE. The loader (warp 2) waits on FREE
-// and loads the second instruction's input into the page. After arriving on O_READY, the consumer also writes the
-// first instruction's log-sum-exp L into the page's second half. The page is freed when its reader is done; its last
-// writer was never asked. The consumer's late write of L can overwrite the second instruction's input.
+// A megakernel block runs its instructions out of a page of shared memory, and each warp has one job. For the first
+// instruction, the consumer (warp 0) writes its output O into the first half of the page and arrives on barrier O_READY.
+// It then writes a second result, L, into the second half. The storer (warp 1) waits on O_READY, copies O to global
+// memory, and frees the page by arriving on barrier FREE. The loader (warp 2) waits on FREE and loads the next
+// instruction's input into the page.
 //
-// Make the loader wait for every write into the page. Par: 1.
+// Make every output correct. Par: 1.
 //
-// Seen in: Hazy Research's Llama-1B megakernel, where the attention storer finishes the QOL page without waiting on
-// L_arrived and the next instruction TMA-loads into it (HazyResearch/Megakernels#17).
+// From: Hazy Research's Llama-1B megakernel (HazyResearch/Megakernels#17).
 #include "common.cuh"
 
 constexpr int H = 32;                    // a page holds O[0..H) and then L[0..H)
@@ -26,7 +24,7 @@ __global__ void megakernel_block(const float* in1, const float* in2, float* out_
     const float a = in1[lane];
     page[lane] = 2.0f * a;               // O
     bar_arrive(O_READY, 64);
-    const float l = a + 1.0f;            // L, computed after O went out
+    const float l = a + 1.0f;            // L
     page[H + lane] = l;
     out_l[lane] = l;
     // >>> edit

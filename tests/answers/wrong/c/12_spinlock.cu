@@ -1,14 +1,11 @@
 // Puzzle 12: The spinlock
 //
 // 64 blocks each fold one value into a shared record (a sum, a count and a maximum) under a lock. Thread 0 takes the
-// lock with atomicCAS, updates the record with plain loads and stores, and frees the lock with atomicExch. The lock
-// gives mutual exclusion on the lock word only. Both atomics are relaxed, so the record's accesses inside one block's
-// critical section are not ordered with those in the next. A block can read the record as it was before the previous
-// holder's update and lose that update.
+// lock with atomicCAS, updates the record with plain loads and stores, and frees the lock with atomicExch.
 //
 // Make the lock protect the record. Par: 2.
 //
-// Seen in: the textbook GPU spinlock, and every kernel that copies it with atomicCAS and atomicExch alone.
+// From: the textbook GPU spinlock.
 #include "common.cuh"
 
 constexpr int B = 64;

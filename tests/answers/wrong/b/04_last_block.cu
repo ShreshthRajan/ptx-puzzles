@@ -1,14 +1,12 @@
 // Puzzle 4: The last block
 //
-// Each of 64 blocks sums its slice and thread 0 writes the block's partial. Thread 0 then takes a ticket from a
-// counter. The block that draws the last ticket fences and adds up all 64 partials. The reader's side is a correct
-// acquire. The writers take their tickets with a relaxed atomicAdd and nothing before it, so the last block can draw
-// the last ticket and still read partials that were not yet written.
+// Each of 64 blocks sums its slice of the input, and thread 0 writes the block's partial sum. Thread 0 then takes a
+// ticket from a counter with atomicAdd. The block that draws the last ticket calls fence_acq_rel() and adds up all 64
+// partials.
 //
 // Make the last block read every partial. Par: 1.
 //
-// Seen in: CUDA's threadFenceReduction sample and every reduction built on it (PyTorch's reduce_kernel among them). The
-// fence before the ticket is the one that goes missing.
+// From: CUDA's threadFenceReduction sample and the reductions built on it.
 #include "common.cuh"
 
 constexpr int B = 64, T = 128;
@@ -34,7 +32,7 @@ __global__ void sum_last_block(const unsigned* in, unsigned* partial, unsigned* 
   }
   __syncthreads();
   if (!last) return;
-  if (t == 0) fence_acq_rel();                    // the reader's acquire: thread 0's ticket, then a fence
+  if (t == 0) fence_acq_rel();
   __syncthreads();
   s[t] = t < B ? partial[t] : 0;
   __syncthreads();

@@ -1,13 +1,10 @@
 // Puzzle 1: Message passing
 //
-// Block 1 writes 32 words and then sets a flag. Block 0 waits for the flag and then copies the words. Both flag
-// accesses are relaxed. A relaxed flag carries its own value and orders nothing else, so block 0 can see the flag set
-// and still read words from before block 1 wrote them.
+// Block 1 writes 32 words, then sets a flag. Block 0 waits until it sees the flag, then copies the words.
 //
-// Make block 0's copy read block 1's words. Par: 2.
+// Make block 0 copy the words block 1 wrote. Par: 2.
 //
-// Seen in: Hazy Research's Llama-1B megakernel, which hands activations between SMs through a relaxed counter and a
-// volatile spin with no fence on either side (HazyResearch/Megakernels#16).
+// From: Hazy Research's Llama-1B megakernel (HazyResearch/Megakernels#16).
 #include "common.cuh"
 
 constexpr int N = 32;

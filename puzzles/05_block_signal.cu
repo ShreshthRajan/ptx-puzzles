@@ -1,14 +1,11 @@
 // Puzzle 5: One thread signals for the block
 //
-// Block 1's 128 threads each write one element of x. Thread 0 then fences and bumps a counter. Block 0 acquires the
-// counter correctly and reads x. Thread 0's fence and atomic form a release, and a release orders the releasing
-// thread's own earlier writes. It orders another thread's writes only if that thread synchronized with the releasing
-// thread first. Warps 1 to 3 never did, so their elements are not published.
+// Block 1's 128 threads each write one element of x. Thread 0 then calls __threadfence() and increments a
+// counter. Block 0 waits on the counter with an acquire and reads x.
 //
 // Make every element of x reach block 0. Par: 1.
 //
-// Seen in: the usual megakernel signal, where one elected thread bumps the counter for its whole block; SuperLU_DIST's
-// fix (239280c) adds a warp synchronization before the fence for the same reason.
+// From: the usual megakernel signal, where one thread bumps the counter for its whole block.
 #include "common.cuh"
 
 constexpr int T = 128;
@@ -18,7 +15,6 @@ __global__ void handoff(unsigned* ready, float* x, float* y) {
   if (blockIdx.x == 1) {                          // producer
     x[t] = 3.0f * t;
     // >>> edit
-    __syncwarp();
     // <<< edit
     if (t == 0) { __threadfence(); atomicAdd(ready, 1u); }
   } else {                                        // consumer

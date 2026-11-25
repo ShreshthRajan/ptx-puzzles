@@ -1,14 +1,12 @@
 // Puzzle 6: One thread waits for the block
 //
-// Block 1 publishes x correctly: every thread writes, the block syncs, thread 0 releases. In block 0, thread 0 spins and
-// fences, which is an acquire. Warps 1 to 3 have their own work first (about 2 ms of it) and then read x. By then block
-// 1 has long finished, so the reads look safe and on hardware they almost always are. Thread 0's acquire orders thread
-// 0's later accesses. Warps 1 to 3 never synchronized with thread 0, so nothing orders their reads after block 1's
-// writes.
+// Block 1 writes x and signals correctly. In block 0, thread 0 spins on the counter and then fences. The other
+// threads read x. Warps 1 to 3 first do about 2 ms of other work, and by then block 1 has long finished, so on real
+// hardware their reads almost always see the new values.
 //
-// Make warps 1 to 3 read x after block 1 wrote it. Par: 1.
+// Make every thread in block 0 read x after block 1 wrote it. Par: 1.
 //
-// Seen in: the usual megakernel wait, where one elected thread spins on the counter for its whole block.
+// From: the usual megakernel wait, where one thread waits for its whole block.
 #include "common.cuh"
 
 constexpr int T = 128;
