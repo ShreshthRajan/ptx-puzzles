@@ -2,37 +2,37 @@
  "01_message_passing.cu": {
   "skeleton": "5e5a486c024a13e1",
   "par": 2,
-  "min_arch": 80
+  "min_arch": 75
  },
  "02_volatile_spin.cu": {
   "skeleton": "7507d148dd9f9660",
   "par": 1,
-  "min_arch": 80
+  "min_arch": 75
  },
  "03_missing_release.cu": {
   "skeleton": "cc2fa62f193a0d9b",
   "par": 1,
-  "min_arch": 80
+  "min_arch": 75
  },
  "04_last_block.cu": {
   "skeleton": "664c92d5eeee9eac",
   "par": 1,
-  "min_arch": 80
+  "min_arch": 75
  },
  "05_block_release.cu": {
   "skeleton": "9b368854d264e02c",
   "par": 1,
-  "min_arch": 80
+  "min_arch": 75
  },
  "06_block_acquire.cu": {
   "skeleton": "4af8d94ea7622201",
   "par": 1,
-  "min_arch": 80
+  "min_arch": 75
  },
  "07_grid_barrier.cu": {
   "skeleton": "b42027a7526601a1",
   "par": 0,
-  "min_arch": 80
+  "min_arch": 75
  },
  "08_tma_store_fence.cu": {
   "skeleton": "20bf08999afb735c",
@@ -42,21 +42,21 @@
  "09_smem_reuse.cu": {
   "skeleton": "1fd05fa52ca05727",
   "par": 1,
-  "min_arch": 80
+  "min_arch": 75
  },
  "10_page_release.cu": {
   "skeleton": "c0ec5388b6daaa55",
   "par": 1,
-  "min_arch": 80
+  "min_arch": 75
  },
  "11_split_k.cu": {
   "skeleton": "457e7c698bd0124e",
   "par": 2,
-  "min_arch": 80
+  "min_arch": 75
  },
  "12_spinlock.cu": {
   "skeleton": "3f114dfa20bf3ca5",
   "par": 2,
-  "min_arch": 80
+  "min_arch": 75
  }
 }

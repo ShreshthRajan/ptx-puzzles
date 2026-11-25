@@ -38,13 +38,17 @@ Puzzle 3: The missing release  (puzzles/03_missing_release.cu)
 
 ## Run it
 
-You need an NVIDIA GPU of compute capability 8.0 or newer (A100, H100, B200, L4, RTX 30, 40 and 50 series), Linux on
-x86-64, and CUDA 12 with `nvcc` (12.8 or newer for RTX 50). Puzzle 8 needs sm_90 or newer and is skipped on older GPUs.
-Colab's free T4 is sm_75 and cannot run syncsan.
+The quickest way is Colab's free T4, with no install:
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ShreshthRajan/ptx-puzzles/blob/main/puzzles.ipynb).
+Each puzzle is a cell you edit, with a grade cell under it.
+
+To run it on your own machine, you need an NVIDIA GPU of compute capability 7.5 or newer (T4, RTX 20 series and later),
+Linux on x86-64, and CUDA 12 with `nvcc` (12.8 or newer for RTX 50). Puzzle 8 needs sm_90 or newer and is skipped on
+older GPUs.
 
 ```
-pip install "cmake>=3.29" git+https://github.com/ShreshthRajan/syncsan
-syncsan build --arch 90            # once; your GPU's compute capability: 80 A100, 86 RTX 30, 89 L4 and RTX 40, 90 H100, 120 RTX 50
+pip install syncsan
+syncsan build --arch 90            # once; your GPU's compute capability: 75 T4, 80 A100, 86 RTX 30, 89 L4 and RTX 40, 90 H100, 120 RTX 50
 python grade.py                    # every puzzle
 python grade.py 3                  # one puzzle
 python grade.py 3 -v               # every race report and syncsan's summary

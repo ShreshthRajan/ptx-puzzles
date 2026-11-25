@@ -85,7 +85,7 @@ def make_manifest():
         sskel, sregs = regions(sol.read_text())
         if sskel != skel:
             raise SystemExit(f"{sol.name}: the solution changes code outside the edit markers")
-        m[p.name] = {"skeleton": digest(skel), "par": cost(sregs), "min_arch": 90 if "sm_90 and newer" in skel else 80}
+        m[p.name] = {"skeleton": digest(skel), "par": cost(sregs), "min_arch": 90 if "sm_90 and newer" in skel else 75}
     MANIFEST.write_text(json.dumps(m, indent=1) + "\n")
     print(f"wrote {MANIFEST.relative_to(ROOT)} ({len(m)} puzzles)")
 
