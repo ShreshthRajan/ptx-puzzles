@@ -9,7 +9,7 @@
 // Make the final split read all three partials. Par: 2.
 //
 // Seen in: CUTLASS's SM90 Stream-K GEMM before 3.7.0, where the final split waited for one earlier split with
-// wait_lt(..., 1) and read the workspace while the middle split's atomicAdd was still landing (NVIDIA/cutlass#2027).
+// wait_lt(..., 1) and read the workspace before the middle split's atomicAdd had finished (NVIDIA/cutlass#2027).
 #include "common.cuh"
 
 constexpr int T = 256, SPLITS = 3, K = 12, KS = K / SPLITS;

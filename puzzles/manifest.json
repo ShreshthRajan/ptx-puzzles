@@ -30,7 +30,7 @@
   "min_arch": 75
  },
  "07_grid_barrier.cu": {
-  "skeleton": "b42027a7526601a1",
+  "skeleton": "99e8824616ae07f5",
   "par": 0,
   "min_arch": 75
  },
@@ -45,12 +45,12 @@
   "min_arch": 75
  },
  "10_page_release.cu": {
-  "skeleton": "c0ec5388b6daaa55",
+  "skeleton": "f4a1daa5acca322f",
   "par": 1,
   "min_arch": 75
  },
  "11_split_k.cu": {
-  "skeleton": "457e7c698bd0124e",
+  "skeleton": "ff7bee26f9ca647e",
   "par": 2,
   "min_arch": 75
  },

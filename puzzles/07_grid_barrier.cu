@@ -5,10 +5,9 @@
 // fence. The kernel runs 1,024 stencil steps with a barrier after each, so the counter is reset and reused. The
 // arrivals release and the waits acquire. The reset is a plain store, and the last arriver's ticket was a relaxed
 // atomic, so the reset is not ordered after the other blocks' tickets. That is a write-write race on the counter. No
-// load reads a stale value, so adversarial mode has nothing to change here; the race report is the evidence. syncsan
-// compares each write with the last write to its word, which is usually the last arriver's own ticket, so it sees the
-// race only when two tickets land at nearly the same moment: about once in 40 crossings on an RTX 5090. The 1,024
-// crossings make the report certain in practice.
+// load reads a stale value, so adversarial mode has nothing to change and the race report is the evidence. syncsan
+// sees this race only when two tickets arrive at nearly the same moment, about once in 40 crossings on an RTX 5090, so
+// the kernel crosses the barrier 1,024 times.
 //
 // Make the reset safe. Par: 0.
 //

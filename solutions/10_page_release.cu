@@ -5,7 +5,7 @@
 // waits there, copies O to global memory, and frees the page by arriving on FREE. The loader (warp 2) waits on FREE
 // and loads the second instruction's input into the page. After arriving on O_READY, the consumer also writes the
 // first instruction's log-sum-exp L into the page's second half. The page is freed when its reader is done; its last
-// writer was never asked. The consumer's late write of L can land on top of the second instruction's input.
+// writer was never asked. The consumer's late write of L can overwrite the second instruction's input.
 //
 // Make the loader wait for every write into the page. Par: 1.
 //
