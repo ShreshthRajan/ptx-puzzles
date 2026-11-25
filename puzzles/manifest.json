@@ -1,0 +1,62 @@
+{
+ "01_message_passing.cu": {
+  "skeleton": "5e5a486c024a13e1",
+  "par": 2,
+  "min_arch": 80
+ },
+ "02_volatile_spin.cu": {
+  "skeleton": "7507d148dd9f9660",
+  "par": 1,
+  "min_arch": 80
+ },
+ "03_missing_release.cu": {
+  "skeleton": "cc2fa62f193a0d9b",
+  "par": 1,
+  "min_arch": 80
+ },
+ "04_last_block.cu": {
+  "skeleton": "9965cbd7a1ff5233",
+  "par": 1,
+  "min_arch": 80
+ },
+ "05_block_release.cu": {
+  "skeleton": "9b368854d264e02c",
+  "par": 1,
+  "min_arch": 80
+ },
+ "06_block_acquire.cu": {
+  "skeleton": "4af8d94ea7622201",
+  "par": 1,
+  "min_arch": 80
+ },
+ "07_grid_barrier.cu": {
+  "skeleton": "d2c3154184ea6bb2",
+  "par": 0,
+  "min_arch": 80
+ },
+ "08_tma_store_fence.cu": {
+  "skeleton": "20bf08999afb735c",
+  "par": 1,
+  "min_arch": 90
+ },
+ "09_smem_reuse.cu": {
+  "skeleton": "1fd05fa52ca05727",
+  "par": 1,
+  "min_arch": 80
+ },
+ "10_page_release.cu": {
+  "skeleton": "c0ec5388b6daaa55",
+  "par": 1,
+  "min_arch": 80
+ },
+ "11_split_k.cu": {
+  "skeleton": "9688b2423e7ec71a",
+  "par": 2,
+  "min_arch": 80
+ },
+ "12_spinlock.cu": {
+  "skeleton": "3f114dfa20bf3ca5",
+  "par": 2,
+  "min_arch": 80
+ }
+}
