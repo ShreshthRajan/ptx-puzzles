@@ -15,7 +15,7 @@
   "min_arch": 80
  },
  "04_last_block.cu": {
-  "skeleton": "9965cbd7a1ff5233",
+  "skeleton": "664c92d5eeee9eac",
   "par": 1,
   "min_arch": 80
  },
@@ -55,8 +55,8 @@
   "min_arch": 80
  },
  "12_spinlock.cu": {
-  "skeleton": "3f114dfa20bf3ca5",
-  "par": 2,
+  "skeleton": "2be7a977583bad0b",
+  "par": 1,
   "min_arch": 80
  }
 }

@@ -131,6 +131,12 @@ def verdict_line(code, out):
     return code == 0, msg
 
 
+def tidy(line):
+    """A report line without the SASS scheduling annotations (&rd=, &wr=, ?trans)."""
+    line = re.sub(r"\s+(&\w+=\S+|\?\w+;)", "", line.strip())
+    return re.sub(r"\s{2,}", "  ", line)
+
+
 def race_reports(out):
     """Each RACE report as its first three lines (the two accesses), in order."""
     lines, reps = out.splitlines(), []
@@ -179,10 +185,10 @@ def grade(path, arch, so, verbose):
     elif not reps:
         print("  races        none")
     else:
-        print(f"  races        {len(reps)} racing pair{'s' if len(reps) > 1 else ''}; the first:")
+        print(f"  races        {len(reps)} racing pair{'s; the first' if len(reps) > 1 and not verbose else 's' if len(reps) > 1 else ''}:")
         for rep in reps[:None if verbose else 1]:
             for l in rep:
-                print("    " + l.strip())
+                print("    " + tidy(l))
         ok = False
     if verbose:
         print("\n".join("    | " + l for l in out.splitlines() if l.startswith("syncsan") and "RACE" not in l))

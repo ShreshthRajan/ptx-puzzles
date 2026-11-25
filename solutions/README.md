@@ -25,10 +25,13 @@ other threads' additions. The fence is per producer, and the counter's atomic de
 the consumer that reads 0 synchronizes with all four.
 
 **4. The last block.** `__threadfence()` before the ticket. The writer's fence and relaxed ticket form a release; the
-last block's ticket and its fence after `__syncthreads()` form the acquire. CUDA's threadFenceReduction sample has the
-writer's fence and no reader fence. That version relies on `fence.sc` being totally ordered: when the last block's own
-fence, which it runs before taking its ticket, comes after every writer's fence in that order, the writers' partials
-are ordered before its reads. The model does not require that order, and the reader fence removes the dependence on it.
+last block's ticket, thread 0's fence and the barrier after it form the acquire. A fence after the ticket does nothing
+for the writer: a fence orders accesses before it with accesses after it, and the partial and the ticket are both
+before it. CUDA's threadFenceReduction sample has the writer's fence and no reader fence. That version relies on
+`fence.sc` being totally ordered: when the last block's own fence, which it runs before taking its ticket, comes after
+every writer's fence in that order, the writers' partials are ordered before its reads. The model does not require that
+order. The reader here fences with `fence.acq_rel`, which has no place in the SC order, so only a release before each
+ticket orders the partials.
 
 **5. One thread signals for the block.** `__syncthreads()` before thread 0's release. A release orders the writes that
 happen before it, and a write by another warp happens before it only through synchronization, here the barrier. With
@@ -40,11 +43,12 @@ accesses. The barrier makes everything before it in thread 0 happen before every
 so their reads come after the acquire and therefore after block 1's writes. Waiting 2 ms is a timing argument; the model
 has no notion of time, and adversarial mode returns the stale value however long the warps wait.
 
-**7. The grid barrier's reset.** `atomicExch(count, 0u)`. Two atomics to one location never race: they are both strong
-and morally strong to each other, so coherence orders them. The plain store was not strong, and nothing ordered it after
-the other blocks' tickets: the last arriver's ticket is relaxed and its fence comes after the reset. A `__threadfence()`
-between the ticket and the reset also removes the race, by making the ticket an acquire, at a cost of one fence; the
-exchange costs none.
+**7. The grid barrier's reset.** `atomicExch(count, 0u)`. Two strong accesses to one location never race: coherence
+orders them, and it follows each thread's program order, so the reset lands after the last arriver's own ticket, which
+came after every other ticket. The plain store was not strong, and nothing ordered it after the other blocks' tickets:
+the last arriver's ticket is relaxed and its fence comes after the reset. Any strong store also works at no cost
+(`st_relaxed(count, 0)`, or a volatile store, which PTX treats as relaxed). A `__threadfence()` between the ticket and
+the reset removes the race too, by making the ticket an acquire, at a cost of one fence.
 
 **8. The bulk store's proxy fence.** `fence_proxy_async()` in every thread before the barrier. The PTX model has more
 than one proxy: ordinary loads and stores use the generic proxy, and the bulk-copy engine reads shared memory through
@@ -69,8 +73,10 @@ reads. Reading 1 synchronizes with the first split only. Reading 2 synchronizes 
 comes after the middle split's own acquire of the first split's release, so both partials are ordered before the final
 split's reads. CUTLASS 3.7.0 fixed the Stream-K case by waiting for every earlier split.
 
-**12. The spinlock.** `__threadfence()` after taking the lock and before freeing it. The fence after the successful
-atomicCAS makes it an acquire; the fence before atomicExch makes the free a release. Each holder's free then synchronizes
-with the next holder's take, so the critical sections are ordered one after another. Without them the lock word's
+**12. The spinlock.** `__threadfence()` after taking the lock. The fence after the successful atomicCAS makes it an
+acquire. The fence before atomicExch already made the unlock a release. Each holder's unlock then synchronizes with the
+next holder's lock, so the critical sections are ordered one after another. Without the acquire the lock word's
 atomics are ordered by coherence and the record's plain accesses by nothing, and the compiler may also move the plain
-accesses past the relaxed atomics. `atom.acquire` on the take and `st.release` on the free do the same.
+loads above the relaxed atomicCAS. A fence before the CAS orders nothing after it, and `__threadfence_block()` orders
+accesses only for threads of the same block, so neither works. On the unlock side, the fence must come after the
+critical section: a release pattern orders only what precedes its fence.
