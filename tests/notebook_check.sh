@@ -1,5 +1,5 @@
 # Execute puzzles.ipynb end to end (as given, and with puzzle 1 solved) with nbconvert.
-# Run with: python remote/run.py --gpu H100 --script exp/notebook_check.sh   (copies the uploaded tree in place of the git clone, since the repo may be private)
+# Run with: python remote/run.py --gpu H100 --script tests/notebook_check.sh   (copies the uploaded tree in place of the git clone, since the repo may be private)
 set -o pipefail
 export DEBIAN_FRONTEND=noninteractive PATH=/opt/conda/bin:$PATH
 echo "=== setup [$(date +%H:%M:%S)]"
