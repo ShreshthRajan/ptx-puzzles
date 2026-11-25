@@ -45,7 +45,15 @@ with tarfile.open(fileobj=buf, mode="w:gz") as t:
 d = Daytona().v0
 t0 = time.time()
 res = Resources(cpu=4, memory=8, disk=10) if a.gpu == "none" else Resources(cpu=8, memory=32, disk=100, gpu=1, gpu_type=[GpuType(a.gpu)])
-sb = d.create(CreateSandboxFromImageParams(image=a.image, auto_delete_interval=0, auto_stop_interval=0, resources=res), timeout=0)
+while True:   # Daytona may allow one GPU sandbox at a time: wait for a free slot
+    try:
+        sb = d.create(CreateSandboxFromImageParams(image=a.image, auto_delete_interval=0, auto_stop_interval=0, resources=res), timeout=0)
+        break
+    except Exception as e:
+        if time.time() - t0 > a.minutes * 60 or not any(w in str(e).lower() for w in ("limit", "quota", "exceed", "available")):
+            raise
+        say(f"waiting for a sandbox: {str(e).splitlines()[0][:160]}")
+        time.sleep(60)
 say(f"sandbox {sb.id} ({a.gpu}) up after {time.time() - t0:.0f} s")
 try:
     sb.fs.upload_file(buf.getvalue(), "/tmp/tree.tgz")
