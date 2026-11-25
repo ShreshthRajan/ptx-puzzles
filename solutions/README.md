@@ -44,7 +44,7 @@ so their reads come after the acquire and therefore after block 1's writes. Wait
 has no notion of time, and adversarial mode returns the stale value however long the warps wait.
 
 **7. The grid barrier's reset.** `atomicExch(count, 0u)`. Two strong accesses to one location never race: coherence
-orders them, and it follows each thread's program order, so the reset lands after the last arriver's own ticket, which
+orders them, and it follows each thread's program order, so the reset comes after the last arriver's own ticket, which
 came after every other ticket. The plain store was not strong, and nothing ordered it after the other blocks' tickets:
 the last arriver's ticket is relaxed and its fence comes after the reset. Any strong store also works at no cost
 (`st_relaxed(count, 0)`, or a volatile store, which PTX treats as relaxed). A `__threadfence()` between the ticket and

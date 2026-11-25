@@ -1,6 +1,4 @@
 build/
 .venv/
 __pycache__/
-results/*/
-!results/validated/
-BRIEF.md
+/results/
