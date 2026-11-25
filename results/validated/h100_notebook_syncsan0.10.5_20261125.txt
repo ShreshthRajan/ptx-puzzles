@@ -1,0 +1,381 @@
+=== setup [05:31:13]
+debconf: delaying package configuration, since apt-utils is not installed
+NVIDIA H100 80GB HBM3, 580.95.05, 9.0
+notebooks prepared; puzzle 1 cell is 3
+=== execute nb_given [05:31:30]
+[NbConvertApp] Converting notebook puzzles.ipynb to notebook
+[IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.
+[NbConvertApp] Writing 59416 bytes to executed.ipynb
+--- cell 1: %%bash
+[33mWARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.[0m[33m
+[0msyncsan built
+puzzles ready
+--- cell 3: %%writefile ptx-puzzles/puzzles/01_message_passing.cu
+Overwriting ptx-puzzles/puzzles/01_message_passing.cu
+--- cell 4: !cd ptx-puzzles && python grade.py 1
+
+Puzzle 1: Message passing  (puzzles/01_message_passing.cu)
+  native       out: correct
+  races        32 racing pairs; the first:
+    syncsan: RACE (write then read) at 0x7d4491e00200
+    block 1 warp 0: STG.E desc[UR4][R2.64], R7 ;  [message_passing(unsigned int*, unsigned int*, unsigned int*)+0x900 01_message_passing.cu:18]
+    block 0 warp 0: LDG.E R7, desc[UR4][R4.64] ;  [message_passing(unsigned int*, unsigned int*, unsigned int*)+0xd0 01_message_passing.cu:26]
+  adversarial  out: WRONG, 32 of 32 values differ; out[0] = 0, expected 1
+  control      out: correct
+  FAIL
+
+0 of 1 pass
+--- cell 6: %%writefile ptx-puzzles/puzzles/02_volatile_spin.cu
+Overwriting ptx-puzzles/puzzles/02_volatile_spin.cu
+--- cell 7: !cd ptx-puzzles && python grade.py 2
+
+Puzzle 2: The volatile spin  (puzzles/02_volatile_spin.cu)
+  native       y: correct
+  races        1 racing pair:
+    syncsan: RACE (write then read) at 0x7f5859e00300
+    block 1 warp 2: STG.E desc[UR4][R2.64], R5 ;  [handoff(unsigned int*, float*, float*)+0x1b0 02_volatile_spin.cu:19]
+    block 0 warp 2: LDG.E R2, desc[UR4][R2.64] ;  [handoff(unsigned int*, float*, float*)+0x130 02_volatile_spin.cu:29]
+  adversarial  y: WRONG, 127 of 128 values differ; y[1] = 1, expected 3
+  control      y: correct
+  FAIL
+
+0 of 1 pass
+--- cell 9: %%writefile ptx-puzzles/puzzles/03_missing_release.cu
+Overwriting ptx-puzzles/puzzles/03_missing_release.cu
+--- cell 10: !cd ptx-puzzles && python grade.py 3
+
+Puzzle 3: The missing release  (puzzles/03_missing_release.cu)
+  native       x: correct
+  races        1 racing pair:
+    syncsan: RACE (write then read) at 0x763bede00380
+    block 4 warp 3: ATOMG.E.ADD.F32.FTZ.RN.STRONG.GPU PT, RZ, desc[UR4][R2.64], R5 ;  [solve_step(int*, float*, float*)+0xa0 sm_20_atomic_functions.hpp:84 < 03_missing_release.cu:19]
+    block 0 warp 3: LDG.E R4, desc[UR4][R4.64] ;  [solve_step(int*, float*, float*)+0x250 03_missing_release.cu:29]
+  adversarial  x: WRONG, 127 of 128 values differ; x[1] = 1, expected 11
+  control      x: correct
+  FAIL
+
+0 of 1 pass
+--- cell 12: %%writefile ptx-puzzles/puzzles/04_last_block.cu
+Overwriting ptx-puzzles/puzzles/04_last_block.cu
+--- cell 13: !cd ptx-puzzles && python grade.py 4
+
+Puzzle 4: The last block  (puzzles/04_last_block.cu)
+  native       total: correct
+  races        1 racing pair:
+    syncsan: RACE (write then read) at 0x70e48de08000
+    block 0 warp 0: STG.E desc[UR6][R4.64], R9 ;  [sum_last_block(unsigned int const*, unsigned int*, unsigned int*, unsigned int*)+0x400 04_last_block.cu:29]
+    block 43 warp 0: LDG.E R5, desc[UR6][R4.64] ;  [sum_last_block(unsigned int const*, unsigned int*, unsigned int*, unsigned int*)+0x5a0 04_last_block.cu:38]
+  adversarial  total: WRONG, 1 of 1 values differ; total[0] = 515, expected 32763
+  control      total: correct
+  FAIL
+
+0 of 1 pass
+--- cell 15: %%writefile ptx-puzzles/puzzles/05_block_release.cu
+Overwriting ptx-puzzles/puzzles/05_block_release.cu
+--- cell 16: !cd ptx-puzzles && python grade.py 5
+
+Puzzle 5: One thread signals for the block  (puzzles/05_block_release.cu)
+  native       y: correct
+  races        1 racing pair:
+    syncsan: RACE (write then read) at 0x70a8ede00380
+    block 1 warp 3: STG.E desc[UR4][R2.64], R5 ;  [handoff(unsigned int*, float*, float*)+0x1f0 05_block_release.cu:19]
+    block 0 warp 3: LDG.E R2, desc[UR4][R2.64] ;  [handoff(unsigned int*, float*, float*)+0x170 05_block_release.cu:26]
+  adversarial  y: WRONG, 96 of 128 values differ; y[32] = -1, expected 95
+  control      y: correct
+  FAIL
+
+0 of 1 pass
+--- cell 18: %%writefile ptx-puzzles/puzzles/06_block_acquire.cu
+Overwriting ptx-puzzles/puzzles/06_block_acquire.cu
+--- cell 19: !cd ptx-puzzles && python grade.py 6
+
+Puzzle 6: One thread waits for the block  (puzzles/06_block_acquire.cu)
+  native       y: WRONG, 31 of 128 values differ; y[1] = 2, expected 7
+  races        1 racing pair:
+    syncsan: RACE (write then read) at 0x75641de00204
+    block 1 warp 0: STG.E desc[UR4][R2.64], R5 ;  [handoff(unsigned int*, float*, float*)+0x350 06_block_acquire.cu:21]
+    block 0 warp 0: LDG.E R2, desc[UR4][R2.64] ;  [handoff(unsigned int*, float*, float*)+0x2c0 06_block_acquire.cu:29]
+  adversarial  y: WRONG, 127 of 128 values differ; y[1] = 2, expected 7
+  control      y: correct
+  FAIL
+
+0 of 1 pass
+--- cell 21: %%writefile ptx-puzzles/puzzles/07_grid_barrier.cu
+Overwriting ptx-puzzles/puzzles/07_grid_barrier.cu
+--- cell 22: !cd ptx-puzzles && python grade.py 7
+
+Puzzle 7: The grid barrier's reset  (puzzles/07_grid_barrier.cu)
+  native       a: correct
+  races        1 racing pair:
+    syncsan: RACE (write then write) at 0x72f28be02000
+    block 2 warp 0: ATOMG.E.ADD.STRONG.GPU PT, R14, desc[UR12][R12.64], R15 ;  [stencil(unsigned int*, unsigned int*, unsigned int*, unsigned int*)+0x3b0 device_atomic_functions.hpp:112 < 07_grid_barrier.cu:25 < 07_grid_barrier.cu:43]
+    block 5 warp 0: STG.E desc[UR12][R12.64], RZ ;  [stencil(unsigned int*, unsigned int*, unsigned int*, unsigned int*)+0x470 07_grid_barrier.cu:27 < 07_grid_barrier.cu:43]
+  adversarial  a: correct
+  control      a: correct
+  FAIL
+
+0 of 1 pass
+--- cell 24: %%writefile ptx-puzzles/puzzles/08_tma_store_fence.cu
+Overwriting ptx-puzzles/puzzles/08_tma_store_fence.cu
+--- cell 25: !cd ptx-puzzles && python grade.py 8
+
+Puzzle 8: The bulk store's proxy fence (sm_90 and newer)  (puzzles/08_tma_store_fence.cu)
+  native       g: correct
+  races        1 racing pair:
+    syncsan: RACE (write, then an async-proxy read) at shared 0x400
+    block 2 warp 0: STS [R3], R6 ;  [tile_store(float*)+0x1a0 08_tma_store_fence.cu:18]
+    block 2 copy engine (cp.async write / TMA-bulk store read): UBLKCP.G.S [UR4], [UR7], UR6 ;  [tile_store(float*)+0x9a0 common.cuh:51 < 08_tma_store_fence.cu:22]
+  adversarial  g: correct
+  control      g: correct
+  FAIL
+
+0 of 1 pass
+--- cell 27: %%writefile ptx-puzzles/puzzles/09_smem_reuse.cu
+Overwriting ptx-puzzles/puzzles/09_smem_reuse.cu
+--- cell 28: !cd ptx-puzzles && python grade.py 9
+
+Puzzle 9: The reused reduction buffer  (puzzles/09_smem_reuse.cu)
+  native       out: correct
+  races        4 racing pairs; the first:
+    syncsan: RACE (read then write) at shared 0x408
+    block 0 warp 0: @!P3 LDS R16, [R9] ;  [argmax_rows(float const*, int*)+0x460 09_smem_reuse.cu:36]
+    block 0 warp 2: @!P0 STS [R7], R24 ;  [argmax_rows(float const*, int*)+0x820 09_smem_reuse.cu:33]
+  adversarial  out: correct
+  control      out: correct
+  FAIL
+
+0 of 1 pass
+--- cell 30: %%writefile ptx-puzzles/puzzles/10_page_release.cu
+Overwriting ptx-puzzles/puzzles/10_page_release.cu
+--- cell 31: !cd ptx-puzzles && python grade.py 10
+
+Puzzle 10: The page goes back too early  (puzzles/10_page_release.cu)
+  native       out_o: correct; out2: correct
+  races        1 racing pair:
+    syncsan: RACE (write then write) at shared 0x480
+    block 0 warp 0: STS [R0+UR4+0x80], R11 ;  [megakernel_block(float const*, float const*, float*, float*, float*)+0x2e0 10_page_release.cu:30]
+    block 0 warp 2: STS [R0+UR4+0x80], R7 ;  [megakernel_block(float const*, float const*, float*, float*, float*)+0x160 10_page_release.cu:43]
+  adversarial  out_o: correct; out2: correct
+  control      out_o: correct; out2: correct
+  FAIL
+
+0 of 1 pass
+--- cell 33: %%writefile ptx-puzzles/puzzles/11_split_k.cu
+Overwriting ptx-puzzles/puzzles/11_split_k.cu
+--- cell 34: !cd ptx-puzzles && python grade.py 11
+
+Puzzle 11: Split-K, three ways  (puzzles/11_split_k.cu)
+  native       out: WRONG, 256 of 256 values differ; out[0] = 48, expected 72
+  races        1 racing pair:
+    syncsan: RACE (read then write) at 0x727be9e03300
+    block 2 warp 2: LDG.E R2, desc[UR4][R2.64] ;  [splitk_tile(float const*, unsigned int*, float*, float*)+0x460 11_split_k.cu:40]
+    block 1 warp 2: ATOMG.E.ADD.F32.FTZ.RN.STRONG.GPU PT, RZ, desc[UR4][R2.64], R7 ;  [splitk_tile(float const*, unsigned int*, float*, float*)+0x350 sm_20_atomic_functions.hpp:84 < 11_split_k.cu:29]
+  adversarial  out: WRONG, 256 of 256 values differ; out[0] = 48, expected 72
+  control      out: WRONG, 256 of 256 values differ; out[0] = 48, expected 72
+  FAIL
+
+0 of 1 pass
+--- cell 36: %%writefile ptx-puzzles/puzzles/12_spinlock.cu
+Overwriting ptx-puzzles/puzzles/12_spinlock.cu
+--- cell 37: !cd ptx-puzzles && python grade.py 12
+
+Puzzle 12: The spinlock  (puzzles/12_spinlock.cu)
+  native       record: correct
+  races        6 racing pairs; the first:
+    syncsan: RACE (write then read) at 0x74c145e00208
+    block 11 warp 0: @P0 STG.E desc[UR4][R4.64+0x8], R11 ;  [locked_update(unsigned int*, Record*)+0x1b0 12_spinlock.cu:26]
+    block 39 warp 0: LDG.E R9, desc[UR4][R4.64+0x8] ;  [locked_update(unsigned int*, Record*)+0x120 12_spinlock.cu:26]
+  adversarial  record: WRONG, 1 of 3 values differ; record[2] = 62, expected 64
+  control      record: correct
+  FAIL
+
+0 of 1 pass
+given files compared
+=== execute nb_sol1 [05:32:47]
+[NbConvertApp] Converting notebook puzzles.ipynb to notebook
+[IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.
+[NbConvertApp] Writing 59019 bytes to executed.ipynb
+--- cell 1: %%bash
+[33mWARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.[0m[33m
+[0msyncsan built
+puzzles ready
+--- cell 3: %%writefile ptx-puzzles/puzzles/01_message_passing.cu
+Overwriting ptx-puzzles/puzzles/01_message_passing.cu
+--- cell 4: !cd ptx-puzzles && python grade.py 1
+
+Puzzle 1: Message passing  (puzzles/01_message_passing.cu)
+  native       out: correct
+  races        none
+  adversarial  out: correct
+  control      out: correct
+  cost         2 sync ops (par 2): par
+  PASS
+
+1 of 1 pass
+--- cell 6: %%writefile ptx-puzzles/puzzles/02_volatile_spin.cu
+Overwriting ptx-puzzles/puzzles/02_volatile_spin.cu
+--- cell 7: !cd ptx-puzzles && python grade.py 2
+
+Puzzle 2: The volatile spin  (puzzles/02_volatile_spin.cu)
+  native       y: correct
+  races        1 racing pair:
+    syncsan: RACE (write then read) at 0x7bd85fe00280
+    block 1 warp 1: STG.E desc[UR4][R2.64], R5 ;  [handoff(unsigned int*, float*, float*)+0x1b0 02_volatile_spin.cu:19]
+    block 0 warp 1: LDG.E R2, desc[UR4][R2.64] ;  [handoff(unsigned int*, float*, float*)+0x130 02_volatile_spin.cu:29]
+  adversarial  y: WRONG, 127 of 128 values differ; y[1] = 1, expected 3
+  control      y: correct
+  FAIL
+
+0 of 1 pass
+--- cell 9: %%writefile ptx-puzzles/puzzles/03_missing_release.cu
+Overwriting ptx-puzzles/puzzles/03_missing_release.cu
+--- cell 10: !cd ptx-puzzles && python grade.py 3
+
+Puzzle 3: The missing release  (puzzles/03_missing_release.cu)
+  native       x: correct
+  races        1 racing pair:
+    syncsan: RACE (write then read) at 0x714845e00280
+    block 2 warp 1: ATOMG.E.ADD.F32.FTZ.RN.STRONG.GPU PT, RZ, desc[UR4][R2.64], R5 ;  [solve_step(int*, float*, float*)+0xa0 sm_20_atomic_functions.hpp:84 < 03_missing_release.cu:19]
+    block 0 warp 1: LDG.E R4, desc[UR4][R4.64] ;  [solve_step(int*, float*, float*)+0x250 03_missing_release.cu:29]
+  adversarial  x: WRONG, 127 of 128 values differ; x[1] = 1, expected 11
+  control      x: correct
+  FAIL
+
+0 of 1 pass
+--- cell 12: %%writefile ptx-puzzles/puzzles/04_last_block.cu
+Overwriting ptx-puzzles/puzzles/04_last_block.cu
+--- cell 13: !cd ptx-puzzles && python grade.py 4
+
+Puzzle 4: The last block  (puzzles/04_last_block.cu)
+  native       total: correct
+  races        1 racing pair:
+    syncsan: RACE (write then read) at 0x75bc27e08000
+    block 0 warp 0: STG.E desc[UR6][R4.64], R9 ;  [sum_last_block(unsigned int const*, unsigned int*, unsigned int*, unsigned int*)+0x400 04_last_block.cu:29]
+    block 43 warp 0: LDG.E R5, desc[UR6][R4.64] ;  [sum_last_block(unsigned int const*, unsigned int*, unsigned int*, unsigned int*)+0x5a0 04_last_block.cu:38]
+  adversarial  total: WRONG, 1 of 1 values differ; total[0] = 517, expected 32763
+  control      total: correct
+  FAIL
+
+0 of 1 pass
+--- cell 15: %%writefile ptx-puzzles/puzzles/05_block_release.cu
+Overwriting ptx-puzzles/puzzles/05_block_release.cu
+--- cell 16: !cd ptx-puzzles && python grade.py 5
+
+Puzzle 5: One thread signals for the block  (puzzles/05_block_release.cu)
+  native       y: correct
+  races        1 racing pair:
+    syncsan: RACE (write then read) at 0x7b919de00280
+    block 1 warp 1: STG.E desc[UR4][R2.64], R5 ;  [handoff(unsigned int*, float*, float*)+0x1f0 05_block_release.cu:19]
+    block 0 warp 1: LDG.E R2, desc[UR4][R2.64] ;  [handoff(unsigned int*, float*, float*)+0x170 05_block_release.cu:26]
+  adversarial  y: WRONG, 96 of 128 values differ; y[32] = -1, expected 95
+  control      y: correct
+  FAIL
+
+0 of 1 pass
+--- cell 18: %%writefile ptx-puzzles/puzzles/06_block_acquire.cu
+Overwriting ptx-puzzles/puzzles/06_block_acquire.cu
+--- cell 19: !cd ptx-puzzles && python grade.py 6
+
+Puzzle 6: One thread waits for the block  (puzzles/06_block_acquire.cu)
+  native       y: WRONG, 31 of 128 values differ; y[1] = 2, expected 7
+  races        1 racing pair:
+    syncsan: RACE (write then read) at 0x720c71e00204
+    block 1 warp 0: STG.E desc[UR4][R2.64], R5 ;  [handoff(unsigned int*, float*, float*)+0x350 06_block_acquire.cu:21]
+    block 0 warp 0: LDG.E R2, desc[UR4][R2.64] ;  [handoff(unsigned int*, float*, float*)+0x2c0 06_block_acquire.cu:29]
+  adversarial  y: WRONG, 127 of 128 values differ; y[1] = 2, expected 7
+  control      y: correct
+  FAIL
+
+0 of 1 pass
+--- cell 21: %%writefile ptx-puzzles/puzzles/07_grid_barrier.cu
+Overwriting ptx-puzzles/puzzles/07_grid_barrier.cu
+--- cell 22: !cd ptx-puzzles && python grade.py 7
+
+Puzzle 7: The grid barrier's reset  (puzzles/07_grid_barrier.cu)
+  native       a: correct
+  races        1 racing pair:
+    syncsan: RACE (write then write) at 0x743e2de02000
+    block 4 warp 0: ATOMG.E.ADD.STRONG.GPU PT, R14, desc[UR12][R12.64], R15 ;  [stencil(unsigned int*, unsigned int*, unsigned int*, unsigned int*)+0x3b0 device_atomic_functions.hpp:112 < 07_grid_barrier.cu:25 < 07_grid_barrier.cu:43]
+    block 6 warp 0: STG.E desc[UR12][R12.64], RZ ;  [stencil(unsigned int*, unsigned int*, unsigned int*, unsigned int*)+0x470 07_grid_barrier.cu:27 < 07_grid_barrier.cu:43]
+  adversarial  a: correct
+  control      a: correct
+  FAIL
+
+0 of 1 pass
+--- cell 24: %%writefile ptx-puzzles/puzzles/08_tma_store_fence.cu
+Overwriting ptx-puzzles/puzzles/08_tma_store_fence.cu
+--- cell 25: !cd ptx-puzzles && python grade.py 8
+
+Puzzle 8: The bulk store's proxy fence (sm_90 and newer)  (puzzles/08_tma_store_fence.cu)
+  native       g: correct
+  races        1 racing pair:
+    syncsan: RACE (write, then an async-proxy read) at shared 0x400
+    block 0 warp 0: STS [R3], R6 ;  [tile_store(float*)+0x1a0 08_tma_store_fence.cu:18]
+    block 0 copy engine (cp.async write / TMA-bulk store read): UBLKCP.G.S [UR4], [UR7], UR6 ;  [tile_store(float*)+0x9a0 common.cuh:51 < 08_tma_store_fence.cu:22]
+  adversarial  g: correct
+  control      g: correct
+  FAIL
+
+0 of 1 pass
+--- cell 27: %%writefile ptx-puzzles/puzzles/09_smem_reuse.cu
+Overwriting ptx-puzzles/puzzles/09_smem_reuse.cu
+--- cell 28: !cd ptx-puzzles && python grade.py 9
+
+Puzzle 9: The reused reduction buffer  (puzzles/09_smem_reuse.cu)
+  native       out: correct
+  races        4 racing pairs; the first:
+    syncsan: RACE (read then write) at shared 0x408
+    block 0 warp 0: @!P3 LDS R16, [R9] ;  [argmax_rows(float const*, int*)+0x460 09_smem_reuse.cu:36]
+    block 0 warp 2: @!P0 STS [R7], R24 ;  [argmax_rows(float const*, int*)+0x820 09_smem_reuse.cu:33]
+  adversarial  out: correct
+  control      out: correct
+  FAIL
+
+0 of 1 pass
+--- cell 30: %%writefile ptx-puzzles/puzzles/10_page_release.cu
+Overwriting ptx-puzzles/puzzles/10_page_release.cu
+--- cell 31: !cd ptx-puzzles && python grade.py 10
+
+Puzzle 10: The page goes back too early  (puzzles/10_page_release.cu)
+  native       out_o: correct; out2: correct
+  races        1 racing pair:
+    syncsan: RACE (write then write) at shared 0x480
+    block 0 warp 0: STS [R0+UR4+0x80], R11 ;  [megakernel_block(float const*, float const*, float*, float*, float*)+0x2e0 10_page_release.cu:30]
+    block 0 warp 2: STS [R0+UR4+0x80], R7 ;  [megakernel_block(float const*, float const*, float*, float*, float*)+0x160 10_page_release.cu:43]
+  adversarial  out_o: correct; out2: correct
+  control      out_o: correct; out2: correct
+  FAIL
+
+0 of 1 pass
+--- cell 33: %%writefile ptx-puzzles/puzzles/11_split_k.cu
+Overwriting ptx-puzzles/puzzles/11_split_k.cu
+--- cell 34: !cd ptx-puzzles && python grade.py 11
+
+Puzzle 11: Split-K, three ways  (puzzles/11_split_k.cu)
+  native       out: WRONG, 256 of 256 values differ; out[0] = 48, expected 72
+  races        1 racing pair:
+    syncsan: RACE (read then write) at 0x79edcde03500
+    block 2 warp 6: LDG.E R2, desc[UR4][R2.64] ;  [splitk_tile(float const*, unsigned int*, float*, float*)+0x460 11_split_k.cu:40]
+    block 1 warp 6: ATOMG.E.ADD.F32.FTZ.RN.STRONG.GPU PT, RZ, desc[UR4][R2.64], R7 ;  [splitk_tile(float const*, unsigned int*, float*, float*)+0x350 sm_20_atomic_functions.hpp:84 < 11_split_k.cu:29]
+  adversarial  out: WRONG, 256 of 256 values differ; out[0] = 48, expected 72
+  control      out: WRONG, 256 of 256 values differ; out[0] = 48, expected 72
+  FAIL
+
+0 of 1 pass
+--- cell 36: %%writefile ptx-puzzles/puzzles/12_spinlock.cu
+Overwriting ptx-puzzles/puzzles/12_spinlock.cu
+--- cell 37: !cd ptx-puzzles && python grade.py 12
+
+Puzzle 12: The spinlock  (puzzles/12_spinlock.cu)
+  native       record: correct
+  races        6 racing pairs; the first:
+    syncsan: RACE (write then read) at 0x7761d9e00208
+    block 21 warp 0: @P0 STG.E desc[UR4][R4.64+0x8], R11 ;  [locked_update(unsigned int*, Record*)+0x1b0 12_spinlock.cu:26]
+    block 18 warp 0: LDG.E R9, desc[UR4][R4.64+0x8] ;  [locked_update(unsigned int*, Record*)+0x120 12_spinlock.cu:26]
+  adversarial  record: WRONG, 1 of 3 values differ; record[2] = 62, expected 64
+  control      record: correct
+  FAIL
+
+0 of 1 pass
+puzzle 1 file == solution, byte for byte
+EXIT 0
