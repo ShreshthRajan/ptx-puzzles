@@ -25,6 +25,7 @@ __global__ void splitk_tile(const float* a, unsigned* flag, float* work, float* 
   } else if (s == 1) {                            // middle split
     if (t == 0) { while (*(volatile unsigned*)flag < 1) {} __threadfence(); }
     __syncthreads();
+    for (int i = 0; i < 10; ++i) __nanosleep(100000);   // its K range is longer: Stream-K splits are uneven
     atomicAdd(&work[t], p);
     // >>> edit
     // <<< edit

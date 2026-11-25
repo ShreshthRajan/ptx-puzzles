@@ -50,7 +50,7 @@
   "min_arch": 80
  },
  "11_split_k.cu": {
-  "skeleton": "9688b2423e7ec71a",
+  "skeleton": "457e7c698bd0124e",
   "par": 2,
   "min_arch": 80
  },
