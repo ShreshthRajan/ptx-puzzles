@@ -55,8 +55,8 @@
   "min_arch": 80
  },
  "12_spinlock.cu": {
-  "skeleton": "2be7a977583bad0b",
-  "par": 1,
+  "skeleton": "3f114dfa20bf3ca5",
+  "par": 2,
   "min_arch": 80
  }
 }

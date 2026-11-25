@@ -73,10 +73,11 @@ reads. Reading 1 synchronizes with the first split only. Reading 2 synchronizes 
 comes after the middle split's own acquire of the first split's release, so both partials are ordered before the final
 split's reads. CUTLASS 3.7.0 fixed the Stream-K case by waiting for every earlier split.
 
-**12. The spinlock.** `__threadfence()` after taking the lock. The fence after the successful atomicCAS makes it an
-acquire. The fence before atomicExch already made the unlock a release. Each holder's unlock then synchronizes with the
-next holder's lock, so the critical sections are ordered one after another. Without the acquire the lock word's
-atomics are ordered by coherence and the record's plain accesses by nothing, and the compiler may also move the plain
-loads above the relaxed atomicCAS. A fence before the CAS orders nothing after it, and `__threadfence_block()` orders
-accesses only for threads of the same block, so neither works. On the unlock side, the fence must come after the
-critical section: a release pattern orders only what precedes its fence.
+**12. The spinlock.** `__threadfence()` after taking the lock and before freeing it. The fence after the successful
+atomicCAS makes it an acquire; the fence before atomicExch makes the unlock a release. Each holder's unlock then
+synchronizes with the next holder's lock, so the critical sections are ordered one after another. Without them the lock
+word's atomics are ordered by coherence and the record's plain accesses by nothing, and the compiler may also move the
+plain accesses past the relaxed atomics. The unlock's fence must come after the critical section: a release pattern
+orders only what precedes its fence, so the fence after the lock does not also publish the update. `__threadfence_block()`
+orders accesses only for threads of the same block, so it works on neither side. `atom.acquire` on the lock and
+`st.release` on the unlock do the same job.

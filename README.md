@@ -78,7 +78,7 @@ python remote/run.py -- 3 7        # puzzles 3 and 7
 | 9 | [The reused reduction buffer](puzzles/09_smem_reuse.cu) | shared slots rewritten before warp 0 read them | Mirage MPK's argmax ([mirage#843](https://github.com/mirage-project/mirage/issues/843)) |
 | 10 | [The page goes back too early](puzzles/10_page_release.cu) | a page freed before its last write | Hazy Research's Llama megakernel ([Megakernels#17](https://github.com/HazyResearch/Megakernels/issues/17)) |
 | 11 | [Split-K, three ways](puzzles/11_split_k.cu) | the final split waits for one earlier split | CUTLASS Stream-K ([cutlass#2027](https://github.com/NVIDIA/cutlass/issues/2027)) |
-| 12 | [The spinlock](puzzles/12_spinlock.cu) | a lock taken with a relaxed atomicCAS | the textbook GPU spinlock |
+| 12 | [The spinlock](puzzles/12_spinlock.cu) | a lock taken and freed with relaxed atomics | the textbook GPU spinlock |
 
 Each file opens with the setup and the goal. [puzzles/common.cuh](puzzles/common.cuh) has the PTX operations as
 one-line helpers (`ld_acquire`, `st_release`, `fence_acq_rel`, named barriers, the proxy fence). The reference

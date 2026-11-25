@@ -1,7 +1,7 @@
 # Maintainers' check: puzzles fail as given, solutions pass, exp/wrong fails, exp/right passes, puzzle 7 reports every time.
 set -o pipefail
 export DEBIAN_FRONTEND=noninteractive PATH=/opt/conda/bin:$PATH
-SYNCSAN_REF=${SYNCSAN_REF:-11d7393cfd456d663cc358d2004bdb2463af8d97}   # syncsan 0.10.2
+SYNCSAN_REF=${SYNCSAN_REF:-1964ff5811a78003d3e7b99cc310b7e9e6db89e2}   # syncsan 0.10.3
 echo "=== setup [$(date +%H:%M:%S)]"
 (apt-get update -qq && apt-get install -y -qq git build-essential >/dev/null) 2>&1 | tail -1
 nvidia-smi --query-gpu=name,driver_version,compute_cap --format=csv,noheader

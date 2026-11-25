@@ -1,12 +1,12 @@
 // Puzzle 12: The spinlock
 //
 // 64 blocks each fold one value into a shared record (a sum, a count and a maximum) under a lock. Thread 0 takes the
-// lock with atomicCAS, updates the record with plain loads and stores, fences, and frees the lock with atomicExch. The
-// fence and the exchange are a correct release. The atomicCAS is relaxed and nothing follows it, so a block that takes
-// the lock is not ordered after the previous holder's critical section. It can read the record as it was before the
-// previous holder's update and lose that update.
+// lock with atomicCAS, updates the record with plain loads and stores, and frees the lock with atomicExch. The lock
+// gives mutual exclusion on the lock word only. Both atomics are relaxed, so the record's accesses inside one block's
+// critical section are not ordered with those in the next. A block can read the record as it was before the previous
+// holder's update and lose that update.
 //
-// Make the lock protect the record. Par: 1.
+// Make the lock protect the record. Par: 2.
 //
 // Seen in: the textbook GPU spinlock, and every kernel that copies it with atomicCAS and atomicExch alone.
 #include "common.cuh"
@@ -20,12 +20,13 @@ __global__ void locked_update(unsigned* lock, Record* rec) {
   const unsigned v = blockIdx.x * 37 % B + 1;
   while (atomicCAS(lock, 0u, 1u) != 0u) {}
   // >>> edit
-  __threadfence_block();
   // <<< edit
   rec->sum += v;
   rec->count += 1;
   if (v > rec->max) rec->max = v;
+  // >>> edit
   __threadfence();
+  // <<< edit
   atomicExch(lock, 0u);
 }
 
