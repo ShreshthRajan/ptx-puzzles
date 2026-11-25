@@ -25,6 +25,7 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parent
 MANIFEST = ROOT / "puzzles" / "manifest.json"
 BEGIN, END = "// >>> edit", "// <<< edit"
+RESULT = re.compile(r"^(\w+: (correct|WRONG)|needs sm_|cuda\w*\(|.*: (an illegal|unspecified launch|.*error))")
 
 # What counts toward cost: barriers, fences, and memory-order qualifiers. Plain atomics are free.
 COST = re.compile(r"\b(__syncthreads\w*|__syncwarp|__threadfence\w*|fence_\w+|bar_sync|bar_arrive|st_release|ld_acquire"
@@ -125,8 +126,8 @@ def verdict_line(code, out):
     """The program's own result line, or why there is none."""
     if code is None:
         return False, "timed out (a barrier or a spin that never completes?)"
-    lines = [l for l in out.splitlines() if not l.startswith("syncsan")]
-    msg = "; ".join(l.strip() for l in lines if l.strip()) or f"exit status {code}"
+    lines = [l.strip() for l in out.splitlines() if RESULT.match(l.strip()) and not l.startswith("syncsan")]
+    msg = "; ".join(lines) or f"exit status {code}" + "".join(f": {l.strip()}" for l in out.splitlines()[-1:])
     return code == 0, msg
 
 

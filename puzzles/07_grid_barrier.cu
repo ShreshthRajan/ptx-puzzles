@@ -2,17 +2,20 @@
 //
 // A software grid barrier. Each block's thread 0 reads the generation, fences, and takes a ticket from a counter. The
 // last block to arrive resets the counter, fences, and bumps the generation. The others spin on the generation and
-// fence. The kernel runs four stencil steps with a barrier after each, so the counter is reset and reused. The
+// fence. The kernel runs 1,024 stencil steps with a barrier after each, so the counter is reset and reused. The
 // arrivals release and the waits acquire. The reset is a plain store, and the last arriver's ticket was a relaxed
 // atomic, so the reset is not ordered after the other blocks' tickets. That is a write-write race on the counter. No
-// load reads a stale value, so adversarial mode has nothing to change here; the race report is the evidence.
+// load reads a stale value, so adversarial mode has nothing to change here; the race report is the evidence. syncsan
+// compares each write with the last write to its word, which is usually the last arriver's own ticket, so it sees the
+// race only when two tickets land at nearly the same moment: about once in 40 crossings on an RTX 5090. The 1,024
+// crossings make the report certain in practice.
 //
 // Make the reset safe. Par: 0.
 //
 // Seen in: Lucebox's Qwen3.5 decode megakernel (AtomicGridSync::sync, `*counter = 0`). RESOLVE reported the same race.
 #include "common.cuh"
 
-constexpr int B = 8, T = 128, N = B * T, STEPS = 4;
+constexpr int B = 8, T = 128, N = B * T, STEPS = 1024;
 
 __device__ void grid_sync(unsigned* count, unsigned* gen) {
   __syncthreads();

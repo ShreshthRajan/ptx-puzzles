@@ -30,7 +30,7 @@
   "min_arch": 80
  },
  "07_grid_barrier.cu": {
-  "skeleton": "d2c3154184ea6bb2",
+  "skeleton": "b42027a7526601a1",
   "par": 0,
   "min_arch": 80
  },
