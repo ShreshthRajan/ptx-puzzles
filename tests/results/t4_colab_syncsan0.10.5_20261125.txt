@@ -1,0 +1,7 @@
+Google Colab free tier, Tesla T4 (sm_75), puzzles.ipynb at ea9f529 (after the renames), syncsan 0.10.5, Nov 25 2026.
+Read from the notebook output.
+
+Setup: syncsan built, puzzles ready.
+Puzzles as given: 1-7 and 9-12 FAIL (no Python, edit-marker or manifest errors); 8 skipped (needs sm_90).
+Puzzle 1 with its solution: PASS (races none, adversarial and control correct, cost 2 = par).
+python grade.py --dir solutions: 11 of 12 pass, 1 skipped (8); all at par.
